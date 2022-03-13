@@ -1,8 +1,9 @@
 ﻿namespace SharpDdos
 {
+    [Flags]
     public enum Method
     {
-        udp,
+        udp = 1,
         http,
         tcp,
         https
