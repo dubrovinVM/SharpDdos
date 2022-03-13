@@ -11,10 +11,13 @@ namespace SharpDdos
         private string DbPath { get; set; }
         private string TargetTaskPath { get; set; }
 
+        private TargetProcessor _targetProcessor;
+
         public TargetService(string dbPath, string targetTaskPath)
         {
             DbPath = dbPath;
             TargetTaskPath = targetTaskPath;
+            _targetProcessor = new TargetProcessor();
         }
 
         internal List<Target> GetUniqueTargets()
@@ -89,7 +92,7 @@ namespace SharpDdos
         {
             var targets = new List<Target>();
 
-            if (AddTargetIfOnlyIpAddressMentioned(targetLine, targets))
+            if (_targetProcessor.AddTargetIfOnlyIpAddressMentioned(targetLine, targets))
             {
                 return targets;
             }          
@@ -99,70 +102,14 @@ namespace SharpDdos
             string ipAddress = words[0].Trim();
             string portsAmdMethodsLine = words[1];
 
-            if (AddTargetIfMethodAndPortFormatIncorrect(targetLine, ipAddress, targets))
+            if (_targetProcessor.AddTargetIfMethodAndPortFormatIncorrect(targetLine, ipAddress, targets))
             {
                 return targets;
             }
 
-            AddTargetWithPortAndMethod(ipAddress, portsAmdMethodsLine, targets);           
+            _targetProcessor.AddTargetWithPortAndMethod(ipAddress, portsAmdMethodsLine, targets);           
 
             return targets;
-
-        }
-        private void AddTargetWithPortAndMethod(string ipAddress, string portsAmdMethodsLine, List<Target> targets)
-        {
-            string[] portMethodArray = portsAmdMethodsLine.Trim().Split(' ');
-
-            foreach (var portMethod in portMethodArray)
-            {
-                string[] @params = portMethod.Split('/');
-
-                var parseResult = Enum.TryParse(@params[0].ToLower(), out Method method);
-                method = parseResult ? method : Method.udp;
-               
-                if (@params.Length != 2 || !int.TryParse(@params[1], out _))
-                {
-                    Console.WriteLine($"Incorrect part of the line {portMethod} for {ipAddress}");
-                    continue;
-                }
-
-                targets.Add(new Target()
-                {
-                    IpAddress = ipAddress,
-                    Method = method,
-                    Port = @params[1]
-                });
-            }           
-        }
-
-        private bool AddTargetIfOnlyIpAddressMentioned(string targetLine, List<Target> targets)
-        {
-            if (!targetLine.Contains(':'))
-            {
-                targets.Add(new Target()
-                {
-                    IpAddress = targetLine.Trim(),
-                    Method = Method.udp,
-                    Port =  "53"
-                });
-                return true;
-            }
-            return false;
-        }
-
-        private bool AddTargetIfMethodAndPortFormatIncorrect(string portMethodLine, string ipAddress, List<Target> targets)
-        {
-            if (!portMethodLine.Contains(' ') && !portMethodLine.Contains('/'))
-            {
-                targets.Add(new Target()
-                {
-                    IpAddress = ipAddress,
-                    Method = Method.udp,
-                    Port = "53"
-                });
-                return true;
-            }
-            return false;           
-        }
+        }       
     }
 }
