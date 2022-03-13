@@ -9,7 +9,7 @@ namespace SharpDdos
     internal class Target
     {
         public string IpAddress { get; set; }
-        public string Port { get; set; }
+        public int Port { get; set; }
         public Method Method { get; set; }            
     }
 }
