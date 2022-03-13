@@ -15,8 +15,8 @@ namespace SharpDdos
                 targets.Add(new Target()
                 {
                     IpAddress = targetLine.Trim(),
-                    Method = Method.udp,
-                    Port =  "53"
+                    Method = Constants.DEFAULT_METHOD,
+                    Port =  Constants.DEFAULT_PORT
                 });
                 return true;
             }
@@ -30,8 +30,8 @@ namespace SharpDdos
                 targets.Add(new Target()
                 {
                     IpAddress = ipAddress,
-                    Method = Method.udp,
-                    Port = "53"
+                    Method = Constants.DEFAULT_METHOD,
+                    Port = Constants.DEFAULT_PORT
                 });
                 return true;
             }
@@ -40,28 +40,122 @@ namespace SharpDdos
 
         internal void AddTargetWithPortAndMethod(string ipAddress, string portsAmdMethodsLine, List<Target> targets)
         {
-            string[] portMethodArray = portsAmdMethodsLine.Trim().Split(' ');
+            string[] portMethodArray = portsAmdMethodsLine.Trim().Replace(",","").Split(' ');
 
-            foreach (var portMethod in portMethodArray)
+            Method methodGlobal = Constants.DEFAULT_METHOD;
+            bool methodParseResultGlobal = default;
+            List<int> ports = new();
+            bool methodParseResult;
+
+            foreach (var portOrMethod in portMethodArray)
             {
-                string[] @params = portMethod.Split('/');
-
-                var parseResult = Enum.TryParse(@params[0].ToLower(), out Method method);
-                method = parseResult ? method : Method.udp;
-
-                if (@params.Length != 2 || !int.TryParse(@params[1], out _))
+                if (!portOrMethod.Contains('/'))
                 {
-                    Console.WriteLine($"Incorrect part of the line {portMethod} for {ipAddress}");
-                    continue;
-                }
+                    Method currentMethod;
 
+                    _ = Enum.TryParse(portOrMethod.ToLower(), out currentMethod);
+                    var isDefined = Enum.IsDefined(typeof(Method), currentMethod);
+
+                    var portParseResult = int.TryParse(portOrMethod.ToLower(), out int port);
+
+                    if (!portParseResult && isDefined)
+                    {
+                        if (ports.Count == 0)
+                        {
+                            methodGlobal = currentMethod;
+                            methodParseResultGlobal = true;
+                            continue;
+                        }
+
+                        foreach (var prt in ports)
+                        {
+                            targets.Add(new Target()
+                            {
+                                IpAddress = ipAddress,
+                                Method = methodParseResultGlobal ? methodGlobal : currentMethod,
+                                Port = prt
+                            });
+                        }
+                        methodGlobal = currentMethod;
+                        methodParseResultGlobal = true;
+                        ports.Clear();
+                    }
+                    else if(portParseResult && !isDefined)
+                    {
+                        ports.Add(port);
+                        continue;
+                    }                   
+                }
+                else
+                {
+                    if (methodParseResultGlobal && ports.Count > 0)
+                    {
+                        foreach (var prt in ports)
+                        {
+                            targets.Add(new Target()
+                            {
+                                IpAddress = ipAddress,
+                                Method = methodGlobal,
+                                Port = prt
+                            });
+                        }
+                        methodParseResultGlobal = false;
+                        ports.Clear();
+                    }
+
+                    int port;
+                    Method currentMethod;
+
+                    string[] @params = portOrMethod.Split('/');
+
+                    var param1 = @params[0].ToLower();
+                    var param2 = @params[1].ToLower();
+
+                    _ = Enum.TryParse(param1.ToLower(), out currentMethod);
+                    var isDefined = Enum.IsDefined(typeof(Method), currentMethod);
+
+                    if(!isDefined)
+                    {
+                        Enum.TryParse(param2.ToLower(), out currentMethod);
+                        isDefined = Enum.IsDefined(typeof(Method), currentMethod);
+                    }
+
+                    methodGlobal = isDefined ? currentMethod : methodGlobal;
+
+                    if(!int.TryParse(param1, out port))
+                    {
+                        _ = int.TryParse(param2, out port);
+                    }
+
+                    methodGlobal = !isDefined && !methodParseResultGlobal ? Constants.DEFAULT_METHOD : methodGlobal;
+                    port = port == 0 ? Constants.DEFAULT_PORT : port;
+                    ports.Add(port);
+                    methodParseResultGlobal = true;
+
+                    foreach (var prt in ports)
+                    {
+                        targets.Add(new Target()
+                        {
+                            IpAddress = ipAddress,
+                            Method = methodGlobal,
+                            Port = prt
+                        });
+                    }
+                    ports.Clear();
+                }                
+            }
+
+            foreach (var prt in ports)
+            {
                 targets.Add(new Target()
                 {
                     IpAddress = ipAddress,
-                    Method = method,
-                    Port = @params[1]
+                    Method = methodGlobal,
+                    Port = prt
                 });
             }
+
+            ports.Clear();
         }
     }
 }
