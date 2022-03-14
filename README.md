@@ -22,10 +22,15 @@ For such a line 188.0.0.0 the program will start a DRypper for 188.0.0.0 via 53 
 2. Unzip an archive.
 3. Start SharpDdos.exe
 4. Fill a file `IP.txt` with targets in any format:
-    217.10.36.226 :80 443/HTTP 16 100/Tcp 
-    217.10.36.227 :HTTP/80 /443  
-    46.4.106.112:80/HTTP , 443/HTTP
-    217.10.36.229 :HTTP 16 100/Tcp 
+  
+       217.10.36.226 :80 443/HTTP 16 100/Tcp 
+  
+       217.10.36.227 :HTTP/80 /443  
+  
+       46.4.106.112:80/HTTP , 443/HTTP
+  
+       217.10.36.229 :HTTP 16 100/Tcp 
+ 
  5. Wait for a while, a progrram will process changes and will run DRypper for each target.
 
 
