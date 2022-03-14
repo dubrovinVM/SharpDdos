@@ -16,3 +16,16 @@ Example: 188.128.56.24:http/80 udp/100 tcp/64
 
 Also there is an opportunity to skip method and port in IP.txt, so the program will automatically take udp/53. For example:
 For such a line 188.0.0.0 the program will start a DRypper for 188.0.0.0 via 53 port using UDP.
+
+**How to run**
+1. Download from https://github.com/dubrovinVM/SharpDdos/blob/develop/ReleaseForDownload/SharpDdosRelease.zip
+2. Unzip an archive.
+3. Start SharpDdos.exe
+4. Fill a file `IP.txt` with targets in any format:
+    217.10.36.226 :80 443/HTTP 16 100/Tcp 
+    217.10.36.227 :HTTP/80 /443  
+    46.4.106.112:80/HTTP , 443/HTTP
+    217.10.36.229 :HTTP 16 100/Tcp 
+ 5. Wait for a while, a progrram will process changes and will run DRypper for each target.
+
+
