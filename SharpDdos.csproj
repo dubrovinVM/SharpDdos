@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <Folder Include="Content\" />
+    <Folder Include="Models\" />
+    <Folder Include="Processors\" />
+    <Folder Include="Services\" />
     <Folder Include="ReleaseForDownload\" />
   </ItemGroup>
 
